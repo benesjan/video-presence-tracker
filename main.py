@@ -31,9 +31,13 @@ if __name__ == '__main__':
         ret, frame = cap.read()
 
         if N_counter == conf.n_th_frame:
-            bboxes, landmarks = detect_faces(frame)
+            try:
+                bboxes, landmarks = detect_faces(frame)
+            except Exception as err:
+                print(f'Exception: {err}')
+                continue
+
             if len(bboxes) != 0:
-                # TODO: handle large crowds
                 bboxes = bboxes.astype('int32')
                 faces = []
                 for box_landmarks in landmarks:

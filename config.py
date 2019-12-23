@@ -18,3 +18,5 @@ class Config:
         self.MODEL_PATH = f'{self.PROJECT_ROOT}/model_weights/resnet18_110.pth'
 
         self.DATASET = f'{self.PROJECT_ROOT}/dataset'
+
+        self.REPRESENTATIONS = f'{self.PROJECT_ROOT}/representations.txt'
