@@ -8,11 +8,12 @@ from skimage import transform as trans
 
 class ClassifierWrapper:
 
-    def __init__(self, model, ref_labels, ref_features, torch_device):
+    def __init__(self, model, ref_labels, ref_features, torch_device, threshold=0.65):
         self.model = model
         self.ref_labels = ref_labels
         self.ref_features = ref_features
         self.torch_device = torch_device
+        self.threshold = threshold
 
     def _frontalize_face(self, img, landmarks):
         target_res = (128, 128)
@@ -76,6 +77,9 @@ class ClassifierWrapper:
             if len(bboxes) != 0:
                 faces = []
                 for box_landmarks in landmarks:
+                    if img.ndim != 3:
+                        print(f'Incorrect number of channels: {img.ndim} instead of 3 --> Skipping the image')
+                        break
                     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                     face_img = self._frontalize_face(img, box_landmarks)
                     face_img = self._process_face(face_img)
@@ -93,7 +97,7 @@ class ClassifierWrapper:
 
         # Classification
         dists = cdist(features, self.ref_features, metric='cosine')
-        decisions = dists < 0.65
+        decisions = dists < self.threshold
         presence = np.sum(decisions, axis=0) >= 1
         label_indices = np.where(presence)[0]
         for label_i in label_indices:
