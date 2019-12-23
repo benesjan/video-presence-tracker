@@ -1,12 +1,13 @@
 from argparse import ArgumentParser
 
 import cv2
+import numpy as np
 from mtcnn import detect_faces
 from pafy import pafy
+from scipy.spatial.distance import cdist
 
-# Process image so that it can be fed to NN
 from config import Config
-from utils import load_model, frontalize_face, process_face, predict
+from utils import load_model, frontalize_face, process_face, predict, load_pickle
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='A bot saving video clips from YouTube video stream'
@@ -24,6 +25,8 @@ if __name__ == '__main__':
     # stream = video.allstreams[4]
     cap = cv2.VideoCapture()
     cap.open(stream.url)
+
+    ref_labels, ref_features = load_pickle(conf.REPRESENTATIONS)
 
     N_counter, bboxes = 1, []
     while True:
@@ -45,6 +48,15 @@ if __name__ == '__main__':
                     face_img = process_face(face_img)
                     faces.append(face_img)
                 features = predict(model, faces)
+
+                # Classification
+                dists = cdist(features, ref_features, metric='cosine')
+                decisions = dists < 0.65
+                presence = np.sum(decisions, axis=0) >= 1
+                label_indices = np.where(presence)[0]
+                for label_i in label_indices:
+                    print(ref_labels[label_i])
+
             N_counter = 1
         else:
             N_counter += 1

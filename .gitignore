@@ -2,4 +2,4 @@
 dataset
 model_weights
 venv
-/representations.txt
+/representations.pickle

@@ -19,4 +19,4 @@ class Config:
 
         self.DATASET = f'{self.PROJECT_ROOT}/dataset'
 
-        self.REPRESENTATIONS = f'{self.PROJECT_ROOT}/representations.txt'
+        self.REPRESENTATIONS = f'{self.PROJECT_ROOT}/representations.pickle'
