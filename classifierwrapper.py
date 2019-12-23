@@ -69,26 +69,34 @@ class ClassifierWrapper:
 
         return features
 
-    def get_labels(self, img):
-        detected_labels = []
+    def get_features(self, img):
+        features = []
         try:
             bboxes, landmarks = detect_faces(img)
             if len(bboxes) != 0:
                 faces = []
                 for box_landmarks in landmarks:
+                    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                     face_img = self._frontalize_face(img, box_landmarks)
                     face_img = self._process_face(face_img)
                     faces.append(face_img)
                 features = self._predict(faces)
-
-                # Classification
-                dists = cdist(features, self.ref_features, metric='cosine')
-                decisions = dists < 0.65
-                presence = np.sum(decisions, axis=0) >= 1
-                label_indices = np.where(presence)[0]
-                for label_i in label_indices:
-                    detected_labels.append(self.ref_labels[label_i])
-
         except Exception as err:
             print(f'Exception: {err}')
+        return features
+
+    def get_labels(self, img):
+        detected_labels = []
+        features = self.get_features(img)
+        if len(features) == 0:
+            return detected_labels
+
+        # Classification
+        dists = cdist(features, self.ref_features, metric='cosine')
+        decisions = dists < 0.65
+        presence = np.sum(decisions, axis=0) >= 1
+        label_indices = np.where(presence)[0]
+        for label_i in label_indices:
+            detected_labels.append(self.ref_labels[label_i])
+
         return detected_labels
