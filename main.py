@@ -1,13 +1,20 @@
 from argparse import ArgumentParser
 
 import cv2
-import numpy as np
-from mtcnn import detect_faces
 from pafy import pafy
-from scipy.spatial.distance import cdist
 
+from classifierwrapper import ClassifierWrapper
 from config import Config
-from utils import load_model, frontalize_face, process_face, predict, load_pickle
+from utils import load_model, load_pickle
+
+
+def start_recording():
+    print("Start recording")
+
+
+def stop_recording():
+    print("Stop recording")
+
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='A bot saving video clips from YouTube video stream'
@@ -17,7 +24,11 @@ if __name__ == '__main__':
 
     # Load configuration and model
     conf = Config()
-    model = load_model(conf)
+
+    # Load reference features and labels.
+    ref_labels, ref_features = load_pickle(conf.REPRESENTATIONS)
+
+    classifier = ClassifierWrapper(load_model(conf), ref_labels, ref_features, conf.DEVICE)
 
     # Get the video stream and pass it to OpenCV
     video = pafy.new(args.url)
@@ -26,43 +37,29 @@ if __name__ == '__main__':
     cap = cv2.VideoCapture()
     cap.open(stream.url)
 
-    ref_labels, ref_features = load_pickle(conf.REPRESENTATIONS)
+    # A list of boolean values which represent whether there was somebody from reference dataset detected
+    presence_of_reference = [False for i in range(conf.check_every_m_analyses)]
 
-    N_counter, bboxes = 1, []
+    N_counter = 1
     while True:
         # Capture frame-by-frame
-        ret, frame = cap.read()
+        _, frame = cap.read()
 
         if N_counter == conf.n_th_frame:
-            try:
-                bboxes, landmarks = detect_faces(frame)
-            except Exception as err:
-                print(f'Exception: {err}')
-                continue
+            detected_labels = classifier.get_labels(frame)
 
-            if len(bboxes) != 0:
-                bboxes = bboxes.astype('int32')
-                faces = []
-                for box_landmarks in landmarks:
-                    face_img = frontalize_face(frame, box_landmarks)
-                    face_img = process_face(face_img)
-                    faces.append(face_img)
-                features = predict(model, faces)
+            presence_of_reference.append(len(detected_labels) != 0)
+            # Remove the oldest detection
+            presence_of_reference = presence_of_reference[1:]
 
-                # Classification
-                dists = cdist(features, ref_features, metric='cosine')
-                decisions = dists < 0.65
-                presence = np.sum(decisions, axis=0) >= 1
-                label_indices = np.where(presence)[0]
-                for label_i in label_indices:
-                    print(ref_labels[label_i])
+            if True in presence_of_reference:
+                start_recording()
+            else:
+                stop_recording()
 
             N_counter = 1
         else:
             N_counter += 1
-
-        for bbox in bboxes:
-            cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (255, 0, 0), 2)
 
         # Display the resulting frame
         cv2.imshow('frame', frame)

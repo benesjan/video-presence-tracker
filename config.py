@@ -9,6 +9,8 @@ class Config:
 
         # Analyze every n-th frame
         self.n_th_frame = 30
+        # Check if there was target person detected in the last m analyses
+        self.check_every_m_analyses = 30
 
         if torch.cuda.is_available():
             self.DEVICE = torch.device('cuda:0')
