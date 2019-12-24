@@ -22,3 +22,5 @@ class Config:
         self.DATASET = f'{self.PROJECT_ROOT}/dataset'
 
         self.REPRESENTATIONS = f'{self.PROJECT_ROOT}/representations.pickle'
+
+        self.VIDEO_OUT = f'{self.PROJECT_ROOT}/video_out'

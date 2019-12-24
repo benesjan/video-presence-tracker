@@ -15,7 +15,8 @@ class ClassifierWrapper:
         self.torch_device = torch_device
         self.threshold = threshold
 
-    def _frontalize_face(self, img, landmarks):
+    @staticmethod
+    def _frontalize_face(img, landmarks):
         target_res = (128, 128)
 
         # Convert landmarks of shape (1, 10) to array of coordinates of 5 facial points (shape (5, 2))
@@ -42,7 +43,8 @@ class ClassifierWrapper:
         return img_warped
 
     # Process image so that it can be fed to NN
-    def _process_face(self, im):
+    @staticmethod
+    def _process_face(im):
         # The following lines are copied from arcface-pytorch project
         # Stack image and it's flipped version. Output dimensions: (128, 128, 2)
         im = np.dstack((im, np.fliplr(im)))
