@@ -12,7 +12,7 @@ from utils import load_model, load_pickle
 if __name__ == '__main__':
     parser = ArgumentParser(description='A bot saving video clips from YouTube video stream'
                                         'containing people whose faces are in the dataset.')
-    parser.add_argument("--url", help="URL of the video stream.", required=True, type=str)
+    parser.add_argument('--url', help='URL of the video stream.', required=True, type=str)
     args = parser.parse_args()
 
     # Load configuration and model
@@ -24,8 +24,8 @@ if __name__ == '__main__':
 
     # Get the video stream and pass it to OpenCV
     video = pafy.new(args.url)
-    # video = pafy.new("https://www.youtube.com/watch?v=K_IR90FthXQ&t=15s")
-    stream = video.getbest(preftype="mp4")
+    # video = pafy.new('https://www.youtube.com/watch?v=K_IR90FthXQ&t=15s')
+    stream = video.getbest(preftype='mp4')
     # stream = video.allstreams[4]
     cap = cv2.VideoCapture()
     cap.open(stream.url)
@@ -38,13 +38,15 @@ if __name__ == '__main__':
 
     # A list of boolean values which represent whether there was somebody from reference dataset detected
     presence_of_reference = [False for i in range(conf.check_every_m_analyses)]
-    video_writer = None
-    currently_detected = set()
 
-    N_counter = 1
+    # Instantiate necessary values
+    video_writer, video_name, currently_detected, N_counter = None, "", set(), 1
     while True:
         # Capture frame-by-frame
         ret, frame = cap.read()
+
+        if not ret:
+            break
 
         if N_counter == conf.n_th_frame:
             detected_labels = classifier.get_labels(frame)
@@ -61,15 +63,18 @@ if __name__ == '__main__':
 
             if True in presence_of_reference:
                 if video_writer is None:
-                    print("Recording started")
+                    print('Recording started')
                     # Instantiate the video writer
                     frame_width, frame_height = int(cap.get(3)), int(cap.get(4))
-                    video_writer = cv2.VideoWriter(join(conf.VIDEO_OUT, f'{time()}.avi'),
+                    video_name = f'{time()}.avi'
+                    video_writer = cv2.VideoWriter(join(conf.VIDEO_OUT, video_name),
                                                    cv2.VideoWriter_fourcc(*'DIVX'), fps, (frame_width, frame_height))
             elif video_writer is not None:
-                print("Recording stopped")
+                print('Recording stopped')
                 video_writer.release()
                 video_writer = None
+                with open(join(conf.VIDEO_OUT, 'detected_identities.txt'), 'a') as f:
+                    f.write(f'{video_name}\t{",".join(currently_detected)}\n')
 
             N_counter = 1
         else:
@@ -89,3 +94,5 @@ if __name__ == '__main__':
 
     if video_writer is not None:
         video_writer.release()
+        with open(join(conf.VIDEO_OUT, 'detected_identities.txt'), 'a') as f:
+            f.write(f'{video_name}\t{",".join(currently_detected)}\n')
