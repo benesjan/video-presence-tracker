@@ -73,8 +73,8 @@ if __name__ == '__main__':
                 print('Recording stopped')
                 video_writer.release()
                 video_writer = None
-                with open(join(conf.VIDEO_OUT, 'detected_identities.txt'), 'a') as f:
-                    f.write(f'{video_name}\t{",".join(currently_detected)}\n')
+                with open(join(conf.VIDEO_OUT, f'{video_name}_identities'), 'a') as f:
+                    f.write(",".join(currently_detected))
 
             N_counter = 1
         else:
@@ -94,5 +94,5 @@ if __name__ == '__main__':
 
     if video_writer is not None:
         video_writer.release()
-        with open(join(conf.VIDEO_OUT, 'detected_identities.txt'), 'a') as f:
-            f.write(f'{video_name}\t{",".join(currently_detected)}\n')
+        with open(join(conf.VIDEO_OUT, f'{video_name}_identities'), 'a') as f:
+            f.write(",".join(currently_detected))
