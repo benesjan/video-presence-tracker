@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from os.path import join
 from time import time
+from moviepy.editor import *
 
 import cv2
 from pafy import pafy
@@ -23,33 +24,24 @@ if __name__ == '__main__':
     classifier = ClassifierWrapper(load_model(conf), ref_labels, ref_features, conf.DEVICE)
 
     # Get the video stream and pass it to OpenCV
-    video = pafy.new(args.url)
-    # video = pafy.new('https://www.youtube.com/watch?v=K_IR90FthXQ&t=15s')
+    # video = pafy.new(args.url)
+    video = pafy.new('https://www.youtube.com/watch?v=K_IR90FthXQ')
     stream = video.getbest(preftype='mp4')
-    # stream = video.allstreams[4]
-    cap = cv2.VideoCapture()
-    cap.open(stream.url)
 
-    try:
-        fps = int(video.get(cv2.CAP_PROP_FPS))
-    except AttributeError as err:
-        print(f'{err}\nDefault fps value set: 30')
-        fps = 30
+    video = VideoFileClip(stream.url)
+    audio = video.audio
 
     # A list of boolean values which represent whether there was somebody from reference dataset detected
     presence_of_reference = [False for i in range(conf.check_every_m_analyses)]
 
-    # Instantiate necessary values
-    video_writer, video_name, currently_detected, N_counter = None, "", set(), 1
-    while True:
-        # Capture frame-by-frame
-        ret, frame = cap.read()
-
-        if not ret:
-            break
+    video_writer, video_name, currently_detected, N_counter, recording_t = None, "", set(), 1, 0
+    for t, video_frame_RGB in video.iter_frames(with_times=True):
+        audio_frame = audio.get_frame(t)
+        # OpenCV expects frame in BGR color format
+        video_frame = cv2.cvtColor(video_frame_RGB, cv2.COLOR_RGB2BGR)
 
         if N_counter == conf.n_th_frame:
-            detected_labels = classifier.get_labels(frame)
+            detected_labels = classifier.get_labels(video_frame)
 
             if len(detected_labels) != 0:
                 presence_of_reference.append(True)
@@ -65,10 +57,11 @@ if __name__ == '__main__':
                 if video_writer is None:
                     print('Recording started')
                     # Instantiate the video writer
-                    frame_width, frame_height = int(cap.get(3)), int(cap.get(4))
+                    frame_width, frame_height = video.size
                     video_name = f'{time()}.avi'
                     video_writer = cv2.VideoWriter(join(conf.VIDEO_OUT, video_name),
-                                                   cv2.VideoWriter_fourcc(*'DIVX'), fps, (frame_width, frame_height))
+                                                   cv2.VideoWriter_fourcc(*'DIVX'), video.fps,
+                                                   (frame_width, frame_height))
             elif video_writer is not None:
                 print('Recording stopped')
                 video_writer.release()
@@ -81,15 +74,14 @@ if __name__ == '__main__':
             N_counter += 1
 
         if video_writer is not None:
-            video_writer.write(frame)
+            video_writer.write(video_frame)
 
         # Display the resulting frame
-        cv2.imshow('frame', frame)
+        cv2.imshow('frame', video_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     # When everything done, release the capture
-    cap.release()
     cv2.destroyAllWindows()
 
     if video_writer is not None:
