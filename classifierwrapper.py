@@ -79,20 +79,20 @@ class ClassifierWrapper:
             if len(bboxes) != 0:
                 faces = []
                 for box_landmarks in landmarks:
-                    if img.ndim != 3:
-                        print(f'Incorrect number of channels: {img.ndim} instead of 3 --> Skipping the image')
-                        break
-                    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                    if img.ndim == 3:
+                        # For some reason, the image sometimes contains all the colors and sometimes not -->
+                        # doesn't matter as the classifier expects 2D image anyway
+                        img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
                     face_img = self._frontalize_face(img, box_landmarks)
                     face_img = self._process_face(face_img)
                     faces.append(face_img)
                 features = self._predict(faces)
         except Exception as err:
-            print(f'Exception: {err}')
+            print(f'\033[93mException: {err} --> skipping the frame classification\033[0m')
         return features
 
     def get_labels(self, img):
-        detected_labels = []
+        detected_labels = set()
         features = self.get_features(img)
         if len(features) == 0:
             return detected_labels
@@ -103,6 +103,6 @@ class ClassifierWrapper:
         presence = np.sum(decisions, axis=0) >= 1
         label_indices = np.where(presence)[0]
         for label_i in label_indices:
-            detected_labels.append(self.ref_labels[label_i])
+            detected_labels.add(self.ref_labels[label_i])
 
         return detected_labels

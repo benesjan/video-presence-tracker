@@ -14,9 +14,9 @@ if __name__ == '__main__':
     parser = ArgumentParser(description='A bot saving video clips from YouTube video stream'
                                         'containing people whose faces are in the dataset.')
     parser.add_argument('--url', help='URL of the video stream.', required=True, type=str)
+    parser.add_argument("--display-video", default=False, action="store_true",
+                        help="Pass this flag as argument to display the video while processing.")
     args = parser.parse_args()
-
-    display_video = True
 
     # Load configuration and model
     conf = Config()
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     # A list of boolean values which represent whether there was somebody from reference dataset detected
     presence_of_reference = [False for i in range(conf.check_every_m_analyses)]
 
-    video_name, currently_detected, N_counter, recording_t = None, set(), 1, 0
+    video_name, currently_detected, N_counter, recording_t, recording = None, set(), 1, 0, False
     for t, video_frame in video.iter_frames(with_times=True):
 
         if N_counter == conf.n_th_frame:
@@ -44,8 +44,9 @@ if __name__ == '__main__':
 
             if len(detected_labels) != 0:
                 presence_of_reference.append(True)
-                currently_detected.update(detected_labels)
-                print(f'Identities of interest currently present in the recorded clip: {currently_detected}')
+                if len(detected_labels - currently_detected) != 0:
+                    currently_detected.update(detected_labels)
+                    print(f'Identities of interest currently present in the recorded clip: {currently_detected}')
             else:
                 presence_of_reference.append(False)
 
@@ -53,26 +54,24 @@ if __name__ == '__main__':
             presence_of_reference = presence_of_reference[1:]
 
             if True in presence_of_reference:
-                if video_name is None:
+                if not recording:
                     print('Recording started')
-                    # Instantiate the video writer
-                    frame_width, frame_height = video.size
-                    video_name = f'{time()}.mp4'
-                    recording_t = t
+                    video_name, recording_t, recording = f'{time()}.mp4', t, True
 
-            elif video_name is not None:
+            elif recording:
                 print('Recording stopped')
                 video_clip = video.subclip(recording_t, t)
-                video_clip.write_videofile(join(conf.VIDEO_OUT, video_name))
+                video_clip.write_videofile(join(conf.VIDEO_OUT, video_name), codec='libx265')
                 with open(join(conf.VIDEO_OUT, f'{video_name}_identities'), 'a') as f:
                     f.write(",".join(currently_detected))
-                video_name = None
+                video_name, recording = None, False
+                currently_detected.clear()
 
             N_counter = 1
         else:
             N_counter += 1
 
-        if display_video:
+        if args.display_video:
             # OpenCV expects frame in BGR color format
             video_frame_BGR = cv2.cvtColor(video_frame, cv2.COLOR_RGB2BGR)
             # Display the resulting frame
@@ -80,12 +79,12 @@ if __name__ == '__main__':
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-    # When everything done, release the capture
+    # When everything done, close the windows
     cv2.destroyAllWindows()
 
-    if video_name is not None:
+    if recording:
         print('Recording stopped')
         video_clip = video.subclip(recording_t)
-        video_clip.write_videofile(join(conf.VIDEO_OUT, video_name))
+        video_clip.write_videofile(join(conf.VIDEO_OUT, video_name), codec='libx265')
         with open(join(conf.VIDEO_OUT, f'{video_name}_identities'), 'a') as f:
             f.write(",".join(currently_detected))
