@@ -5,3 +5,5 @@ venv
 /representations.pickle
 __pycache__
 /video_out/
+/api_key
+/processed_ids.pickle
