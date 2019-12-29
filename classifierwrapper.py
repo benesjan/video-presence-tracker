@@ -4,16 +4,27 @@ import torch
 from mtcnn import detect_faces
 from scipy.spatial.distance import cdist
 from skimage import transform as trans
+from torch.nn import DataParallel
+
+from models.resnet import resnet_face18
 
 
 class ClassifierWrapper:
 
-    def __init__(self, model, ref_labels, ref_features, torch_device, threshold=0.65):
-        self.model = model
+    def __init__(self, model_path, ref_labels, ref_features, threshold=0.65):
         self.ref_labels = ref_labels
         self.ref_features = ref_features
-        self.torch_device = torch_device
+        self.torch_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.threshold = threshold
+        self._set_model(model_path)
+
+    def _set_model(self, model_path):
+        model = resnet_face18(False)
+        model = DataParallel(model)
+        model.load_state_dict(torch.load(model_path, map_location=self.torch_device))
+        model.to(self.torch_device)
+        model.eval()
+        self.model = model
 
     @staticmethod
     def _frontalize_face(img, landmarks):

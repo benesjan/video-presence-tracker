@@ -6,7 +6,7 @@ import numpy as np
 
 from classifierwrapper import ClassifierWrapper
 from config import Config
-from utils import load_model, save_pickle
+from pickle_utils import save_pickle
 
 if __name__ == '__main__':
     # 1) Load configuration and model
@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
     labels, features = [], []
 
-    classifier = ClassifierWrapper(load_model(conf), labels, features, conf.DEVICE)
+    classifier = ClassifierWrapper(conf.MODEL_PATH, labels, features)
 
     # 2) Compute representative feature vectors from the dataset
     for name in listdir(conf.DATASET):
