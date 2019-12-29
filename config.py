@@ -16,7 +16,7 @@ class Config:
         self.RECORD_IF_IN_M_ANAL = 15
 
         # A path to model weights
-        self.MODEL_PATH = f'{self.PROJECT_ROOT}/model_weights/resnet18_110.pth'
+        self.MODEL_WEIGHTS_PATH = f'{self.PROJECT_ROOT}/model_weights/resnet18_110.pth'
 
         # A path to the reference dataset - used to compute features of the target identities
         self.DATASET = f'{self.PROJECT_ROOT}/dataset'
@@ -28,8 +28,6 @@ class Config:
         self.VIDEO_DIR = f'{self.PROJECT_ROOT}/video_out'
 
         # YouTube related
-        self.YOUTUBE_API_KEY_PATH = f'{self.PROJECT_ROOT}/api_key'
         self.PROCESSED_YOUTUBE_IDS = f'{self.PROJECT_ROOT}/processed_ids.pickle'
-
         # The time between new video checks [in seconds]
         self.SLEEP_INTERVAL = 600

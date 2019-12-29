@@ -14,9 +14,9 @@ class ClassifierWrapper:
     A class implementing the classification pipeline
     """
 
-    def __init__(self, model_path, ref_labels, ref_features, threshold=0.65):
+    def __init__(self, model_weights_path, ref_labels, ref_features, threshold=0.65):
         """
-        :param model_path: str, path to the model weights
+        :param model_weights_path: str, path to the model weights
         :param ref_labels: a list containing the labels,
                the index corresponds to the row withing ref_features
         :param ref_features: numpy.ndarray where each row is 1 feature vector
@@ -28,17 +28,17 @@ class ClassifierWrapper:
         self.ref_features = ref_features
         self.torch_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.threshold = threshold
-        self._set_model(model_path)
+        self._set_model(model_weights_path)
 
-    def _set_model(self, model_path):
+    def _set_model(self, model_weights_path):
         """
         A function which instantiates the model and loads the weights
-        :param model_path: str, path to the model weights
+        :param model_weights_path: str, path to the model weights
         :return: None
         """
         model = resnet_face18(False)
         model = DataParallel(model)
-        model.load_state_dict(torch.load(model_path, map_location=self.torch_device))
+        model.load_state_dict(torch.load(model_weights_path, map_location=self.torch_device))
         model.to(self.torch_device)
         model.eval()
         self.model = model

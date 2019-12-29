@@ -16,7 +16,7 @@ if __name__ == '__main__':
     # 1) Load configuration and model
     conf = Config()
     labels, features = [], []
-    classifier_wrapper = ClassifierWrapper(conf.MODEL_PATH, labels, features)
+    classifier_wrapper = ClassifierWrapper(conf.MODEL_WEIGHTS_PATH, labels, features)
 
     # 2) Iterate through the dataset folders (the names of those folders are labels)
     for name in listdir(conf.DATASET):

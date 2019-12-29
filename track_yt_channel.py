@@ -3,7 +3,7 @@ A script which gets YouTube channel id as an argument from console and
 continually processes every new video uploaded to this channel.
 
 Example usage:
-$ python main.py --display-video --channel-id UCeY0bbntWzzVIaj2z3QigXg
+$ python track_yt_channel.py --display-video --channel-id UCeY0bbntWzzVIaj2z3QigXg
 """
 from argparse import ArgumentParser
 from os.path import exists
@@ -51,7 +51,8 @@ def get_next_new_channel_vid(channel_id, api_key, processed_ids_path):
 if __name__ == '__main__':
     parser = ArgumentParser(description='A bot saving video clips from YouTube video stream'
                                         'containing people whose faces are in the dataset.')
-    parser.add_argument('--channel-id', help='URL of the video stream.', required=True, type=str)
+    parser.add_argument('--channel-id', help='ID of the video channel.', required=True, type=str)
+    parser.add_argument('--yt-api-key', help='YouTube API key.', required=True, type=str)
     parser.add_argument("--display-video", default=False, action="store_true",
                         help="Pass this flag as argument to display the video while processing.")
     args = parser.parse_args()
@@ -63,17 +64,14 @@ if __name__ == '__main__':
     ref_labels, ref_features = load_pickle(conf.REPRESENTATIONS)
 
     # Instantiate classifier and video processor
-    classifier_wrapper = ClassifierWrapper(conf.MODEL_PATH, ref_labels, ref_features)
+    classifier_wrapper = ClassifierWrapper(conf.MODEL_WEIGHTS_PATH, ref_labels, ref_features)
     video_processor = VideoProcessor(classifier_wrapper, conf.VIDEO_DIR, args.display_video)
-
-    # Load the YouTube API key
-    with open(conf.YOUTUBE_API_KEY_PATH) as f:
-        api_key = f.read()
 
     while True:
         try:
             # Iterate over new videos
-            for video_id, video_title in get_next_new_channel_vid(args.channel_id, api_key, conf.PROCESSED_YOUTUBE_IDS):
+            for video_id, video_title in get_next_new_channel_vid(args.channel_id, args.yt_api_key,
+                                                                  conf.PROCESSED_YOUTUBE_IDS):
                 # Get the exact URL of the video file
                 video = pafy.new(f'https://www.youtube.com/watch?v={video_id}')
                 stream = video.getbest(preftype='mp4')
@@ -88,3 +86,4 @@ if __name__ == '__main__':
             sleep(conf.SLEEP_INTERVAL)
         except KeyboardInterrupt:
             print('Exiting')
+            break
