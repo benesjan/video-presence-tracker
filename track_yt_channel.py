@@ -13,10 +13,8 @@ import requests
 from moviepy.editor import *
 from pafy import pafy
 
-from classifierwrapper import ClassifierWrapper
 from config import Config
-from pickle_utils import load_pickle, save_pickle
-from videoprocessor import VideoProcessor
+from video_presence_tracker import *
 
 
 def get_next_new_channel_vid(channel_id, api_key, processed_ids_path):
@@ -63,9 +61,9 @@ if __name__ == '__main__':
     # Load reference features and labels.
     ref_labels, ref_features = load_pickle(conf.REPRESENTATIONS)
 
-    # Instantiate classifier and video processor
-    classifier_wrapper = ClassifierWrapper(conf.MODEL_WEIGHTS_PATH, ref_labels, ref_features)
-    video_processor = VideoProcessor(classifier_wrapper, conf.VIDEO_DIR, args.display_video)
+    # Instantiate the video processor
+    video_processor = VideoProcessor(ref_labels, ref_features, conf.MODEL_WEIGHTS_PATH,
+                                     conf.VIDEO_DIR, args.display_video)
 
     while True:
         try:

@@ -8,15 +8,14 @@ from os.path import join, exists
 import cv2
 import numpy as np
 
-from classifierwrapper import ClassifierWrapper
 from config import Config
-from pickle_utils import save_pickle
+from video_presence_tracker import *
 
 if __name__ == '__main__':
     # 1) Load configuration and model
     conf = Config()
     labels, features = [], []
-    classifier_wrapper = ClassifierWrapper(conf.MODEL_WEIGHTS_PATH, labels, features)
+    classifier_wrapper = ClassifierWrapper(labels, features, conf.MODEL_WEIGHTS_PATH)
 
     # 2) Iterate through the dataset folders (the names of those folders are labels)
     for name in listdir(conf.DATASET):

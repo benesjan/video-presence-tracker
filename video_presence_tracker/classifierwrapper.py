@@ -6,7 +6,7 @@ from scipy.spatial.distance import cdist
 from skimage import transform as trans
 from torch.nn import DataParallel
 
-from models.resnet import resnet_face18
+from .models.resnet import resnet_face18
 
 
 class ClassifierWrapper:
@@ -14,12 +14,12 @@ class ClassifierWrapper:
     A class implementing the classification pipeline
     """
 
-    def __init__(self, model_weights_path, ref_labels, ref_features, threshold=0.65):
+    def __init__(self, ref_labels, ref_features, model_weights_path, threshold=0.65):
         """
-        :param model_weights_path: str, path to the model weights
         :param ref_labels: a list containing the labels,
                the index corresponds to the row withing ref_features
         :param ref_features: numpy.ndarray where each row is 1 feature vector
+        :param model_weights_path: str, path to the model weights
         :param threshold: a float representing the maximum cosine distance
                between reference feature vector and a feature vector
                belonging to the same class

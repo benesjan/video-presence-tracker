@@ -3,6 +3,8 @@ from time import time
 
 import cv2
 
+from .classifierwrapper import ClassifierWrapper
+
 
 class VideoProcessor:
     """
@@ -11,14 +13,17 @@ class VideoProcessor:
     is detected.
     """
 
-    def __init__(self, classifier_wrapper, video_dir, display_vid=False):
+    def __init__(self, ref_labels, ref_features, model_weights_path, video_dir, display_vid=False):
         """
-        :param classifier_wrapper: a class implementing the classification pipeline
+        :param ref_labels: a list containing the labels,
+               the index corresponds to the row withing ref_features
+        :param ref_features: numpy.ndarray where each row is 1 feature vector
+        :param model_weights_path: str, path to the model weights
         :param video_dir: a path to the directory where the processed videos will be stored
         :param display_vid: a parameter determining whether the video should be displayed
                in a separate window
         """
-        self.classifier_wrapper = classifier_wrapper
+        self.classifier_wrapper = ClassifierWrapper(ref_labels, ref_features, model_weights_path)
         self.video_dir = video_dir
         self.display_vid = display_vid
 
@@ -77,8 +82,8 @@ class VideoProcessor:
             if self.display_vid:
                 # 9) Display the video frame if the corresponding flag was set
                 # OpenCV expects the frame in BGR color format
-                video_frame_BGR = cv2.cvtColor(video_frame, cv2.COLOR_RGB2BGR)
-                cv2.imshow('frame', video_frame_BGR)
+                video_frame_bgr = cv2.cvtColor(video_frame, cv2.COLOR_RGB2BGR)
+                cv2.imshow('frame', video_frame_bgr)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
 
