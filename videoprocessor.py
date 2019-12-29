@@ -5,10 +5,8 @@ import cv2
 
 
 class VideoProcessor:
-    def __init__(self, ref_labels, ref_features, classifier, video_dir, display_vid=False):
-        self.ref_labels = ref_labels
-        self.ref_features = ref_features
-        self.classifier = classifier
+    def __init__(self, classifier_wrapper, video_dir, display_vid=False):
+        self.classifier_wrapper = classifier_wrapper
         self.video_dir = video_dir
         self.display_vid = display_vid
 
@@ -20,7 +18,7 @@ class VideoProcessor:
         for t, video_frame in video_clip.iter_frames(with_times=True):
 
             if N_counter == nth_frame:
-                detected_labels = self.classifier.get_labels(video_frame)
+                detected_labels = self.classifier_wrapper.get_labels(video_frame)
 
                 if len(detected_labels) != 0:
                     presence_of_reference.append(True)

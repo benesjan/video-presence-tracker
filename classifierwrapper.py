@@ -10,8 +10,20 @@ from models.resnet import resnet_face18
 
 
 class ClassifierWrapper:
+    """
+    A class implementing the classification pipeline
+    """
 
     def __init__(self, model_path, ref_labels, ref_features, threshold=0.65):
+        """
+        :param model_path: str, path to the model weights
+        :param ref_labels: a list containing the labels,
+               the index corresponds to the row withing ref_features
+        :param ref_features: numpy.ndarray where each row is 1 feature vector
+        :param threshold: a float representing the maximum cosine distance
+               between reference feature vector and a feature vector
+               belonging to the same class
+        """
         self.ref_labels = ref_labels
         self.ref_features = ref_features
         self.torch_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -19,6 +31,11 @@ class ClassifierWrapper:
         self._set_model(model_path)
 
     def _set_model(self, model_path):
+        """
+        A function which instantiates the model and loads the weights
+        :param model_path: str, path to the model weights
+        :return: None
+        """
         model = resnet_face18(False)
         model = DataParallel(model)
         model.load_state_dict(torch.load(model_path, map_location=self.torch_device))
@@ -28,12 +45,19 @@ class ClassifierWrapper:
 
     @staticmethod
     def _frontalize_face(img, landmarks):
+        """
+        A function which returns 128x128 image with frontalized face
+        :param img: image with face
+        :param landmarks: numpy.ndarray
+        :return: numpy.ndarray, image with frontalized face
+        """
         target_res = (128, 128)
 
         # Convert landmarks of shape (1, 10) to array of coordinates of 5 facial points (shape (5, 2))
         dst = landmarks.astype(np.float32)
         facial5points = np.array([[dst[j], dst[j + 5]] for j in range(5)])
 
+        # The desired position of landmarks
         src = np.array([
             [30.2946, 51.6963],
             [65.5318, 51.5014],
@@ -44,6 +68,7 @@ class ClassifierWrapper:
         src[:, 0] *= (target_res[0] / 96)
         src[:, 1] *= (target_res[1] / 112)
 
+        # Compute the parameters of the affine transformation
         tform = trans.SimilarityTransform()
         tform.estimate(facial5points, src)
         M = tform.params[0:2, :]
@@ -56,6 +81,11 @@ class ClassifierWrapper:
     # Process image so that it can be fed to NN
     @staticmethod
     def _process_face(im):
+        """
+        A function, which transforms the image
+        :param im:
+        :return:
+        """
         # The following lines are copied from arcface-pytorch project
         # Stack image and it's flipped version. Output dimensions: (128, 128, 2)
         im = np.dstack((im, np.fliplr(im)))

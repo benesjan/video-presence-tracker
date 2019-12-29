@@ -1,3 +1,10 @@
+"""
+Script which gets YouTube channel id as an argument from console and
+continually processes every new video uploaded to this channel.
+
+Example usage:
+$ python main.py --display-video --channel-id UCeY0bbntWzzVIaj2z3QigXg
+"""
 from argparse import ArgumentParser
 from os.path import exists
 from time import sleep
@@ -13,6 +20,14 @@ from videoprocessor import VideoProcessor
 
 
 def get_next_new_channel_vid(channel_id, api_key, processed_ids_path):
+    """
+    A generator function, which returns id and title of not yet processed videos
+    :param channel_id: str, YouTube channel ID
+    :param api_key: str, YouTube API key
+    :param processed_ids_path: path to the pickle file,
+           where the processed video ids are stored in a set
+    :return: video id and video title
+    """
     processed_ids = set()
     if exists(processed_ids_path):
         processed_ids = load_pickle(processed_ids_path)
@@ -46,8 +61,10 @@ if __name__ == '__main__':
 
     # Load reference features and labels.
     ref_labels, ref_features = load_pickle(conf.REPRESENTATIONS)
+
+    # Instantiate classifier and video processor
     classifier_wrapper = ClassifierWrapper(conf.MODEL_PATH, ref_labels, ref_features)
-    video_processor = VideoProcessor(ref_labels, ref_features, classifier_wrapper, conf.VIDEO_DIR, args.display_video)
+    video_processor = VideoProcessor(classifier_wrapper, conf.VIDEO_DIR, args.display_video)
 
     # Load the YouTube API key
     with open(conf.YOUTUBE_API_KEY_PATH) as f:
@@ -55,9 +72,13 @@ if __name__ == '__main__':
 
     while True:
         try:
+            # Iterate over new videos
             for video_id, video_title in get_next_new_channel_vid(args.channel_id, api_key, conf.PROCESSED_YOUTUBE_IDS):
+                # Get the exact URL of the video file
                 video = pafy.new(f'https://www.youtube.com/watch?v={video_id}')
                 stream = video.getbest(preftype='mp4')
+
+                # Create an instance of moviepy video - used to cut out the snippets containing the target identites
                 video = VideoFileClip(stream.url)
 
                 print(f'Processing video with title: {video_title}')
