@@ -78,31 +78,34 @@ class ClassifierWrapper:
 
         return img_warped
 
-    # Process image so that it can be fed to NN
     @staticmethod
-    def _process_face(im):
+    def _process_image(img):
         """
-        A function, which transforms the image
-        :param im:
-        :return:
+        A function, which transforms the image into a form which can be fed to the model
+        (originally from arcface-pytorch project)
+        :param img: numpy.ndarray, the image to process
+        :return: numpy.ndarray, the processed image
         """
-        # The following lines are copied from arcface-pytorch project
         # Stack image and it's flipped version. Output dimensions: (128, 128, 2)
-        im = np.dstack((im, np.fliplr(im)))
+        img = np.dstack((img, np.fliplr(img)))
         # Transpose. Output dimensions: (2, 128, 128)
-        im = im.transpose((2, 0, 1))
+        img = img.transpose((2, 0, 1))
         # Add dimension. Output dimensions: (2, 1, 128, 128)
-        im = im[:, np.newaxis, :, :]
-        im = im.astype(np.float32, copy=False)
+        img = img[:, np.newaxis, :, :]
+        img = img.astype(np.float32, copy=False)
         # Normalize to <-1, 1>
-        im -= 127.5
-        im /= 127.5
-        return im
+        img -= 127.5
+        img /= 127.5
+        return img
 
-    # Get features for 1 batch
-    def _predict(self, images):
-        images_array = np.vstack(images)
-        data = torch.from_numpy(images_array)
+    def _get_features_for_batch(self, imgs):
+        """
+        Function which returns features for one batch of images stacked on top of each other
+        (originally from arcface-pytorch project)
+        :param imgs: numpy.ndarray, an array of images, dimensions: (num_img * 2, 1, 128, 128)
+        :return: numpy.ndarray, an array of features, dimensions: (num_img, 1024)
+        """
+        data = torch.from_numpy(imgs)
         data = data.to(self.torch_device)
         output = self.model(data)
         output = output.data.cpu().numpy()
@@ -114,6 +117,11 @@ class ClassifierWrapper:
         return features
 
     def get_features(self, img):
+        """
+        A function which detects faces in the image, and computes the feature vector for each detection
+        :param img: numpy.ndarray, dimensions: (height, weight, 3)
+        :return: numpy.ndarray, an array of features, dimensions: (num_img, 1024)
+        """
         features = []
         try:
             bboxes, landmarks = detect_faces(img)
@@ -125,14 +133,20 @@ class ClassifierWrapper:
                         # doesn't matter as the classifier expects 2D image anyway
                         img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
                     face_img = self._frontalize_face(img, box_landmarks)
-                    face_img = self._process_face(face_img)
+                    face_img = self._process_image(face_img)
                     faces.append(face_img)
-                features = self._predict(faces)
+                faces = np.vstack(faces)
+                features = self._get_features_for_batch(faces)
         except Exception as err:
             print(f'\033[93mException: {err} --> skipping the frame classification\033[0m')
         return features
 
     def get_labels(self, img):
+        """
+        A function which returns labels for the image.
+        :param img: numpy.ndarray, dimensions: (height, weight, 3)
+        :return: a set of labels
+        """
         detected_labels = set()
         features = self.get_features(img)
         if len(features) == 0:
