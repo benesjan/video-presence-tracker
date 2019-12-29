@@ -32,15 +32,20 @@ If the face is not detected in any of the images corresponding to the identity, 
     ```
 
 ## Usage
-The track_yt_channel.py continually processes new videos uploaded to a YouTube channel specified by the CHANNEL_ID.
-To execute the script run the following command:
-```bash
-python ./track_yt_channel.py --display-video --channel-id CHANNEL_ID --yt-api-key API_KEY
-```
-If the --display-video flag is present, the video will be displayed in a window as it is processed.
-To obtain the CHANNEL_ID go to [this site](https://socialnewsify.com/get-channel-id-by-username-youtube/)
-and enter the channel name.
-The get the YouTube API key read the Data API [documentation](https://developers.google.com/youtube/v3/getting-started). 
+- To process a specific video, run the following command:
+    ```bash
+    python ./process_video.py --display-video --video-path path/to/video.mp4
+    ```
+    If the --display-video flag is present, the video will be displayed in a window as it is processed.
+    
+- The track_yt_channel.py continually processes new videos uploaded to a YouTube channel specified by the CHANNEL_ID.
+    To execute the script run the command bellow:
+    ```bash
+    python ./track_yt_channel.py --display-video --channel-id CHANNEL_ID --yt-api-key API_KEY
+    ```
+    To obtain the CHANNEL_ID go to [this site](https://socialnewsify.com/get-channel-id-by-username-youtube/)
+    and enter the channel name.
+    The get the YouTube API key read the Data API [documentation](https://developers.google.com/youtube/v3/getting-started). 
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
