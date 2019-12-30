@@ -14,7 +14,7 @@ class ClassifierWrapper:
     A class implementing the classification pipeline
     """
 
-    def __init__(self, ref_labels, ref_features, model_weights_path, threshold=0.65):
+    def __init__(self, ref_labels, ref_features, model_weights_path, threshold=0.5):
         """
         :param ref_labels: a list containing the labels,
                the index corresponds to the row withing ref_features

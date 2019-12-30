@@ -1,8 +1,11 @@
 # video-presence-tracker
 
-video-presence-tracker is a Python project which cuts out video segments from videos containing
+A Python project which cuts out video segments from videos containing
 specified identities.
 The system uses face detection and recognition implemented in PyTorch.
+
+> This project was created as a part of [gitcoin contest](https://gitcoin.co/issue/ArweaveTeam/Bounties/20/3827)
+> organized by [Arweave](https://www.arweave.org/).
 
 ## Installation
 
@@ -17,19 +20,29 @@ The system uses face detection and recognition implemented in PyTorch.
     pip install -r requirements.txt
     ```
 
-3. Download the [model weights](https://drive.google.com/open?id=1wJTbgNT11GSLNZT-nsCzXNeu6Pqh5r3y) and set the
-MODEL_WEIGHTS constant in the config.py file.
+3. Create a dataset with identities to track.
+    The data has to be in the standard format:
+    * dataset
+        * name1
+            * image1.jpg
+            * image2.jpg
+            * image3.jpg
+        * name2
+            * image1.jpg
+            * image2.jpg
+            * ...
 
-4. Create a reference dataset in the
-[standardized format](https://pytorch.org/docs/stable/torchvision/datasets.html#imagefolder)
-(dataset/first_identity/image1.jpg, ...) and set the DATASET constant in the config.py file.
-Each image has to contain exactly one face.
-If the face is not detected in any of the images corresponding to the identity, new images will have to be provided.
+    Each image has to contain exactly one face.
+    If the face is not detected in any of the images corresponding to the identity, new images will have to be provided.
+
+4. Set the DATASET constant in the config.py file aiming at the dataset root folder.
 
 5. Finally, execute the setup.py script:
     ```bash
     python ./setup.py
     ```
+   This command downloads the model weights and computes representative feature vectors from the
+   provided dataset.
 
 ## Usage
 - To process a specific video, run the following command:

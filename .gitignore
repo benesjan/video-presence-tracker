@@ -6,3 +6,4 @@ venv
 __pycache__
 /video_out/
 /processed_ids.pickle
+/app_data/
