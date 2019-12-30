@@ -84,8 +84,8 @@ class VideoProcessor:
                 # OpenCV expects the frame in BGR color format
                 video_frame_bgr = cv2.cvtColor(video_frame, cv2.COLOR_RGB2BGR)
                 cv2.imshow('frame', video_frame_bgr)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
+                if cv2.waitKey(1) & 0xFF == ord('q') or cv2.getWindowProperty('frame', cv2.WND_PROP_VISIBLE) < 1:
+                    raise KeyboardInterrupt
 
         if self.display_vid:
             # When everything done, close the windows
