@@ -36,3 +36,4 @@ class Config:
         # permaweb uploader constants
         # Maximum acceptable transaction size in bytes
         self.MAX_TRANSACTION_SIZE = 2000000
+        self.PERMAWEB_FILE_URLS = f'{self.APP_DATA_DIR}/permaweb_file_urls.csv'
