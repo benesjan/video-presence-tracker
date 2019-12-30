@@ -1,8 +1,8 @@
 # video-presence-tracker
 
 A Python project which cuts out video segments from videos containing
-specified identities.
-The system uses face detection and recognition implemented in PyTorch.
+specified identities and uploads these segments to permaweb.
+The system uses face detection and face recognition implemented in PyTorch.
 
 > This project was created as a part of [gitcoin contest](https://gitcoin.co/issue/ArweaveTeam/Bounties/20/3827)
 > organized by [Arweave](https://www.arweave.org/).
@@ -59,6 +59,31 @@ The system uses face detection and recognition implemented in PyTorch.
     To obtain the CHANNEL_ID go to [this site](https://socialnewsify.com/get-channel-id-by-username-youtube/)
     and enter the channel name.
     The get the YouTube API key read the Data API [documentation](https://developers.google.com/youtube/v3/getting-started). 
+
+### Uploading to permaweb
+1. To upload the videos to permaweb install the arweave CLI:
+    ```bash
+    npm i arweave-deploy
+    ```
+
+2. And run the permaweb_uploader:
+    ```bash
+    python ./permaweb_uploader.py --arweave-key path/to/arweave-keyfile.json
+    ```
+    The script will check for new videos every few minutes and uploads them
+    to the permaweb.
+
+### Quering data from permaweb
+Every transaction has two or more tags:
+1. A tag with the feed name:
+>Feed-Name:VideoPresenceTracker
+2. A tag or multiple tags (there can be multiple tracked identities in the video) with identities, e.g:
+    >Donald_Trump:1
+
+    The tag value is always set to 1 
+
+Concrete example how to query the data from VideoPresenceTracker feed is
+available at [example_query.py](https://github.com/benesjan/video-presence-tracker/blob/master/example_query.py).
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
