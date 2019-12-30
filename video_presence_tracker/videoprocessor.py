@@ -98,7 +98,7 @@ class VideoProcessor:
     def _save_recording(self, video, video_name, currently_detected, t_start, t_end=None):
         """
         A function which saves the video and corresponding detections
-        :param video: oviepy.editor.VideoFileClip - a video which is currently being processed
+        :param video: moviepy.editor.VideoFileClip - a video which is currently being processed
         :param video_name: str, a name under which the video is going to be saved
         :param currently_detected: a set of identities detected in the video segment
         :param t_start: numpy.float64, the beginning of the video segment

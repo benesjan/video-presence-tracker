@@ -32,3 +32,7 @@ class Config:
         self.PROCESSED_YOUTUBE_IDS = f'{self.APP_DATA_DIR}/processed_ids.pickle'
         # The time between new video checks [in seconds]
         self.SLEEP_INTERVAL = 600
+
+        # permaweb uploader constants
+        # Maximum acceptable transaction size in bytes
+        self.MAX_TRANSACTION_SIZE = 2000000
