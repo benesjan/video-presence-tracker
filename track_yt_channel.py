@@ -4,6 +4,7 @@ continually processes every new video uploaded to this channel.
 
 Example usage:
 $ python track_yt_channel.py --display-video --channel-id UCeY0bbntWzzVIaj2z3QigXg
+(NBCNews: UCeY0bbntWzzVIaj2z3QigXg, BBC News: UC16niRr50-MSBwiO3YDb3RA)
 """
 from argparse import ArgumentParser
 from os.path import exists
@@ -34,7 +35,8 @@ def get_next_new_channel_vid(channel_id, api_key, processed_ids_path):
         'channelId': channel_id,
         'key': api_key,
         'part': 'snippet',
-        'type': 'video'
+        'type': 'video',
+        'maxResults': 20
     }
     videos = requests.get(url='https://www.googleapis.com/youtube/v3/search', params=params).json()
     for video_dict in videos['items']:
