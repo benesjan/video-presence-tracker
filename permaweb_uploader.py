@@ -1,7 +1,9 @@
+import base64
 from argparse import ArgumentParser
 from math import ceil
 from os import listdir, remove, makedirs
 from os.path import join, getsize, exists
+from shutil import move
 from time import sleep
 
 import requests
@@ -16,9 +18,10 @@ def get_next_interval(duration, num_splits):
         yield i * segment_duration, (i + 1) * segment_duration
 
 
-def upload_and_get_url(file_path):
-    files = {'upload_file': open(file_path, 'rb')}
-    r = requests.post('http://localhost:1908/raw', files=files)
+def upload_and_get_url(file_path, tags):
+    with open(file_path, 'rb') as video_file:
+        file_base64 = base64.b64encode(video_file.read())
+    r = requests.post('http://localhost:1908/raw', data={'data': file_base64, 'tags': tags})
     return r.content
 
 
@@ -39,7 +42,12 @@ if __name__ == '__main__':
         try:
             for file_ in listdir(conf.VIDEO_DIR):
                 if file_.endswith('mp4'):
-                    files_to_upload = [join(conf.VIDEO_DIR, f'{file_}_identities')]
+                    files_to_upload, tags = [], []
+                    tags.append({'Feed-Name': 'VideoPresenceTracker'})
+
+                    with open(join(conf.VIDEO_DIR, f'{file_}_identities'), 'r') as identities_file:
+                        identities = identities_file.read().split(',')
+
                     video_path = join(conf.VIDEO_DIR, file_)
                     size_in_bytes = getsize(video_path)
                     if size_in_bytes > conf.MAX_TRANSACTION_SIZE:
@@ -52,14 +60,18 @@ if __name__ == '__main__':
                             files_to_upload.append(video_clip_path)
                     else:
                         files_to_upload.append(video_path)
-                    with open(conf.PERMAWEB_FILE_URLS, 'a') as f:
+                    with open(conf.TRANSACTION_LOG, 'a') as f:
                         for file_to_upload in files_to_upload:
-                            f.write(upload_and_get_url(file_to_upload))
+                            f.write(str(upload_and_get_url(file_to_upload, tags)))
                             f.write('\n')
                             if 'part' in file_to_upload:
                                 print(f'Deleting video part {file_to_upload}.')
                                 remove(file_to_upload)
-
+                                to_move = f'{file_to_upload[0:-10]}.mp4'
+                                if exists(to_move):
+                                    move(to_move, uploaded_dir)
+                            else:
+                                move(file_to_upload, uploaded_dir)
 
             print(f'Going to sleep for {conf.SLEEP_INTERVAL} seconds')
             sleep(conf.SLEEP_INTERVAL)
