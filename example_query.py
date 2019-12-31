@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
         print(f'Quering transactions containing videos with {identity}')
 
-        # 4) Convert the object to JSON and send it as POST request
+        # 4) Convert the object to JSON and send it as a POST request
         r = requests.post('https://arweave.net/arql', json=arql_obj)
 
         # 5) Print the transactions

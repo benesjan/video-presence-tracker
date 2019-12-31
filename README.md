@@ -1,7 +1,7 @@
 # video-presence-tracker
 
-A Python project which cuts out video segments from videos containing
-specified identities and uploads these segments to permaweb.
+A set of Python scripts for cutting out segments from videos containing specified faces.
+These segments can be uploaded to the permaweb.
 The system uses face detection and face recognition implemented in PyTorch.
 
 > This project was created as a part of [gitcoin contest](https://gitcoin.co/issue/ArweaveTeam/Bounties/20/3827)
@@ -76,7 +76,7 @@ The system uses face detection and face recognition implemented in PyTorch.
 ### Quering data from permaweb
 Every transaction has two or more tags:
 1. A tag with the feed name:
->Feed-Name:VideoPresenceTracker
+    >Feed-Name:VideoPresenceTracker
 2. A tag or multiple tags (there can be multiple tracked identities in the video) with identities, e.g:
     >Donald_Trump:1
 
