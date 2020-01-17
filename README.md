@@ -1,7 +1,7 @@
 # video-presence-tracker
 
 A set of Python scripts for cutting out segments from videos containing specified faces.
-These segments can be uploaded to the permaweb.
+These segments can be uploaded to the [permaweb](https://www.arweave.org/) using the permaweb_uploader.py.
 The system uses face detection and face recognition implemented in PyTorch.
 
 > This project was created as a part of [gitcoin contest](https://gitcoin.co/issue/ArweaveTeam/Bounties/20/3827)
