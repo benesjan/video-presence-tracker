@@ -19,7 +19,7 @@ networkx==2.4
 numpy==1.16.1
 opencv-python==4.1.2.30
 pafy==0.5.5
-Pillow==6.2.1
+Pillow==8.3.2
 proglog==0.1.9
 pycryptodome==3.9.4
 pyparsing==2.4.5
